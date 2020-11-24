@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+    <div class="operator">
+        <button id="upload">上传音频</button>
+        <input id="loadfile" type="file" />
+    </div>
+    <!-- canvas 区域 -->
+    <div id="canvas-wrapper"></div>
+    <script type="text/javascript" src="./audio-visualizer.js"></script>
+    <script>
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext("2d");
+        const canvasWrapper = document.getElementById("canvas-wrapper");
+        canvasWrapper.appendChild(canvas);
+
+        function getRandom(m, n) {
+            return Math.round(Math.random() * (n - m) + m);
+        }
+
+        let width, height;
+        const dots = [];
+        const SIZE = 128;
+        function getDots() {
+            for (let i = 0; i < SIZE; i ++) {
+                const dotX = getRandom(0, width);
+                const dotY = getRandom(0, height);
+                const dotColor = `rgba(${getRandom(254, 255)}, ${getRandom(10, 255)}, ${getRandom(140, 180)}, 0)`;
+                dots.push({
+                    x: dotX,
+                    y: dotY,
+                    color: dotColor,
+                    cap: 0,
+                    dx: getRandom(1, 2)
+                });
+            }
+        }
+
+        function draw(arr) {
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < SIZE; i ++) {
+                const o = dots[i];
+                ctx.beginPath();
+                const r = 5 + arr[i] / 256 * Math.max(height, width) / 12;
+                ctx.arc(o.x, o.y, r, 0, Math.PI * 2, true);
+                // const round = ctx.createLinearGradient(o.x, o.y, 0, o.x, o.y, r);
+                const round = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, r);
+                round.addColorStop(0, "#fff");
+                round.addColorStop(1, o.color);
+                ctx.fillStyle = round;
+                ctx.fill();
+                o.x += o.dx;
+                o.x = o.x > width ? 0 : o.x;
+            }
+        }
+
+        function resize() {
+            width = canvasWrapper.clientWidth;
+            height = canvasWrapper.clientHeight;
+            canvas.width = width;
+            canvas.height = height;
+
+            getDots();
+        }
+        resize();
+        window.onresize = resize;
+
+        document.getElementById("upload").onclick = function() {
+            console.log(222);
+            document.getElementById("loadfile").click();
+        }
+
+        document.getElementById("loadfile").onchange = function() {
+            const file = this.files[0];
+            const fileReader = new FileReader;
+            fileReader.onload = (e) => {
+                const { result } = e.target;
+                const audio = new Musicvisualizer({
+                    size: SIZE,
+                    draw: draw,
+                })
+                audio.play(result);
+            }
+            fileReader.readAsArrayBuffer(file);
+        }
+    </script>
+</body>
+</html>
