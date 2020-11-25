@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./assets/style.css" />
 </head>
-<body>
+<body class="container">
     <div class="operator">
         <button id="upload">上传音频</button>
         <input id="loadfile" type="file" />
@@ -42,7 +42,6 @@
                     color: dotColor,
                     cap: 0,
                     dy: getRandom(1, 2),
-                    dx: getRandom(1, 2)
                 });
             }
         }
@@ -61,8 +60,6 @@
                 ctx.fill();
                 o.y -= o.dy;
                 o.y = o.y < 0 ? height : o.y;
-                o.x += o.dx;
-                o.x = o.x > width ? 0 : o.x;
             }
         }
 
@@ -72,7 +69,7 @@
             let x = 0;
             for (let i = 0; i < SIZE; i ++) {
               barHeight = arr[i];
-              ctx.fillStyle = 'rgb(' + (barHeight + 100) + ', 50, 50)';
+              ctx.fillStyle = 'rgba(' + (barHeight + 100) + ', 50, 180, 1)';
               ctx.fillRect(x, height - barHeight / 2, barWidth, barHeight / 2);
 
               x += barWidth + 1;
