@@ -1,106 +1,115 @@
-function Musicvisualizer(obj){
-	this.source = null;
-	this.count = 0;
+class AudioVisualizer {
+  constructor(props) {
+    const {size, draw} = props;
+    this.size = size;
+    this.draw = draw;
 
-	this.analyser = Musicvisualizer.ac.createAnalyser();
-	this.size = obj.size;
-	this.analyser.fftSize = this.size*2;
+    this.source = null;
+    this.count = 0;
+    this.ac = new (window.AudioContext || window.webkitAudioContext)();
+    this.analyser = this.ac.createAnalyser();
+    // 当执行快速傅里叶变换（Fast Fourier Transfor (FFT)）时，这些（信号）样本被用来获取频域数据。
+    this.analyser.fftsize = this.size * 2;
 
-	// GainNode用来控制音频的音量
-	this.gainNode = Musicvisualizer.ac[Musicvisualizer.ac.createGain?"createGain":"createGainNode"]();
-	// 对象调用对象可以用obj.method，也可以obj[method]
-	this.gainNode.connect(Musicvisualizer.ac.destination);
+    // an AudioNode that represents a change in volume.
+    this.gainNode = this.ac.createGain();
+    // Allows us to connect the output of this node to be input into another node, either as audio data or as the value of an AudioParam.
+    this.gainNode.connect(this.ac.destination);
 
-	this.analyser.connect(this.gainNode);
+    this.analyser.connect(this.gainNode);
 
-	this.xhr = new XMLHttpRequest();
-	this.draw = obj.draw;
-	this.visualize();
-}
+    this.xhr = new XMLHttpRequest;
 
-Musicvisualizer.ac = new (window.AudioContext || window.webkitAudioContext)();//共用的
+    this.fixBug();
+    this.visualizer();
+  }
 
-// 解决 Chrome 66之后高版本中AudioContext被强行suspend的问题
-if(typeof AudioContext != "undefined" || typeof webkitAudioContext != "undefined") {
-   var resumeAudio = function() {
-      if(typeof Musicvisualizer.ac == "undefined" || Musicvisualizer.ac == null) return;
-      if(Musicvisualizer.ac.state == "suspended") Musicvisualizer.ac.resume();
-      document.removeEventListener("click", resumeAudio);
-   };
-   document.addEventListener("click", resumeAudio);
-}
-
-// load -> decode -> play
-Musicvisualizer.prototype.load = function(url,fun){
-	this.xhr.abort();
-	this.xhr.open("GET",url);
-	this.xhr.responseType = "arraybuffer";
-	var self = this;
-	this.xhr.onload = function(){
-		fun(self.xhr.response);
-	}
-	this.xhr.send();
-}
-
-// BaseAudioContext.decodeAudioData()用来生成AudioBuffer
-// AudioBuffer供AudioBufferSourceNode使用，这样，AudioBufferSourceNode才可以播放音频数据
-Musicvisualizer.prototype.decode = function(arraybuffer,fun){
-	Musicvisualizer.ac.decodeAudioData(arraybuffer,function(buffer){
-		fun(buffer);
-	},function(err){
-		console.log(err);
-	});
-}
-
-Musicvisualizer.prototype.play = function(path){
-	var n = ++this.count;
-	var self = this;
-	self.source && self.source[self.source.stop ? "stop":"noteOff"](); // 开始前先暂停之前音频的播放，防止多份音频同时播放
-	if(path instanceof ArrayBuffer){
-		self.decode(path,function(buffer){
-			if(n!=self.count) return;
-			var bufferSource = Musicvisualizer.ac.createBufferSource();
-			// 将解码成功后的buffer赋值给bufferSource的buffer属性
-			bufferSource.buffer = buffer;
-			bufferSource.loop = true;
-			bufferSource.connect(self.analyser);
-			bufferSource[bufferSource.start?"start":"noteOn"](0);
-			self.source = bufferSource;
-		});
-	}
-	else{
-		self.load(path,function(arraybuffer){
-			if(n!=self.count) return;
-			self.decode(arraybuffer,function(buffer){
-				if(n!=self.count) return;
-				var bufferSource = Musicvisualizer.ac.createBufferSource();
-				// 将解码成功后的buffer赋值给bufferSource的buffer属性
-				bufferSource.buffer = buffer;
-				bufferSource.connect(self.analyser);
-				bufferSource[bufferSource.start?"start":"noteOn"](0);
-				self.source = bufferSource;
-			});
-		});
-	}
-
-}
-
-Musicvisualizer.prototype.changeVolumn = function(percent){
-	this.gainNode.gain.value = percent * percent;
-}
-
-Musicvisualizer.prototype.visualize = function(){
-	var self = this;
-    console.log("arr", this);
-	var arr = new Uint8Array(self.analyser.frequencyBinCount);//数组长度是fftsize的一半
-	// console.log(self.analyser.frequencyBinCount)
-	requestAnimationFrame = window.requestAnimationFrame ||
-							window.webkitrequestAnimationFrame ||
-							window.mozrequestAnimationFrame;//兼容
-	function fn(){
-		self.analyser.getByteFrequencyData(arr);// 将音频频域数据复制到传入的Uint8Array数组
-		self.draw(arr);
-		requestAnimationFrame(fn);
+  fixBug() {
+    // 解决 Chrome 66之后高版本中AudioContext被强行suspend的问题
+    if(typeof AudioContext != "undefined" || typeof webkitAudioContext != "undefined") {
+      const resumeAudio = function() {
+        if(typeof this.ac == "undefined" || this.ac == null) return;
+        if(this.ac.state == "suspended") this.ac.resume();
+        document.removeEventListener("click", resumeAudio);
+      };
+      document.addEventListener("click", resumeAudio);
     }
-	requestAnimationFrame(fn);
+  }
+
+  /********** load -> decode -> paly **********/
+
+  load(url, callback) {
+    // Aborts the request if it has already been sent.
+    this.xhr.abort();
+    this.xhr.open("GET", url);
+    this.xhr.responseType = "arraybuffer";
+    const self = this;
+    this.xhr.onload = () => {
+      callback(self.xhr.response);
+    }
+    this.xhr.send();
+  }
+
+  decode(arraybuffer, callback) {
+    // ArrayBuffer is loaded from XMLHttpRequest and FileReader
+    this.ac.decodeAudioData(arraybuffer).then((buffer) => {
+      callback(buffer);
+    }).catch((err) => {
+      console.log(err);
+    })
+  }
+
+  play(path) {
+    let n = ++this.count;
+    const self = this;
+    self.source && self.source[self.source.stop ? "stop" : "nodeOff"]();
+    if (path instanceof ArrayBuffer) {
+      self.decode(path, (buffer) => {
+        if (n !== self.count) return ;
+        this.inputBufferSource(buffer);
+      })
+    } else {
+      self.load(path, (arraybuffer) => {
+        if (n !== this.count) return ;
+        self.decode(arraybuffer, (buffer) => {
+          if (n !== self.count) return ;
+          this.inputBufferSource(buffer);
+        })
+      })
+    }
+  }
+  
+  inputBufferSource(buffer) {
+    const self = this;
+    const bufferSource = this.ac.createBufferSource();
+    bufferSource.buffer = buffer;
+    bufferSource.loop = true;
+    bufferSource.connect(self.analyser);
+    bufferSource[bufferSource.start ? "start" : "nodeOn"](0);
+    self.source = bufferSource;
+  }
+
+  changeVolumn(percent) {
+    this.gainNode.gain.value = percent * percent;
+  }
+
+  visualizer() {
+    const self = this;
+    const arr = new Uint8Array(self.analyser.frequencyBinCount);
+    requestAnimationFrame = window.requestAnimationFrame ||
+      window.webkitrequestAnimationFrame ||
+      window.mozrequestAnimationFrame; // 兼容
+    function fn() {
+      self.analyser.getByteFrequencyData(arr);
+      if (Array.isArray(self.draw)) {
+        self.draw.map(item => {
+          item(arr);
+        })
+      } else {
+        self.draw(arr);
+      }
+      requestAnimationFrame(fn);
+    }
+    requestAnimationFrame(fn);
+  }
 }

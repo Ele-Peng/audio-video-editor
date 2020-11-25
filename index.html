@@ -46,7 +46,7 @@
             }
         }
 
-        function draw(arr) {
+        function drawBg(arr) {
             ctx.clearRect(0, 0, width, height);
             for (let i = 0; i < SIZE; i ++) {
                 const o = dots[i];
@@ -60,6 +60,19 @@
                 ctx.fill();
                 o.x += o.dx;
                 o.x = o.x > width ? 0 : o.x;
+            }
+        }
+
+        function drawBar(arr) {
+            const barWidth = width / SIZE - 1;
+            let barHeight;
+            let x = 0;
+            for (let i = 0; i < SIZE; i ++) {
+              barHeight = arr[i];
+              ctx.fillStyle = 'rgb(' + (barHeight + 100) + ', 50, 50)';
+              ctx.fillRect(x, height - barHeight / 2, barWidth, barHeight / 2);
+
+              x += barWidth + 1;
             }
         }
 
@@ -83,9 +96,9 @@
             const fileReader = new FileReader;
             fileReader.onload = (e) => {
                 const { result } = e.target;
-                const audio = new Musicvisualizer({
+                const audio = new AudioVisualizer({
                     size: SIZE,
-                    draw: draw,
+                    draw: [drawBg, drawBar],
                 })
                 audio.play(result);
             }
