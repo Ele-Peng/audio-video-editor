@@ -20,6 +20,9 @@
         const canvasWrapper = document.getElementById("canvas-wrapper");
         canvasWrapper.appendChild(canvas);
 
+        /**
+         * 在 [m, n] 之间取随机数
+         */
         function getRandom(m, n) {
             return Math.round(Math.random() * (n - m) + m);
         }
@@ -50,7 +53,6 @@
                 ctx.beginPath();
                 const r = 5 + arr[i] / 256 * Math.max(height, width) / 12;
                 ctx.arc(o.x, o.y, r, 0, Math.PI * 2, true);
-                // const round = ctx.createLinearGradient(o.x, o.y, 0, o.x, o.y, r);
                 const round = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, r);
                 round.addColorStop(0, "#fff");
                 round.addColorStop(1, o.color);
@@ -73,7 +75,6 @@
         window.onresize = resize;
 
         document.getElementById("upload").onclick = function() {
-            console.log(222);
             document.getElementById("loadfile").click();
         }
 
