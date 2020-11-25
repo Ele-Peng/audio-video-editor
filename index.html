@@ -31,6 +31,7 @@
             for (let i = 0; i < SIZE; i ++) {
                 const dotX = getRandom(0, width);
                 const dotY = getRandom(0, height);
+                // TODO 改成 hsl，让其在 粉色色相内 变化
                 const dotColor = `rgba(${getRandom(254, 255)}, ${getRandom(10, 255)}, ${getRandom(140, 180)}, 0)`;
                 dots.push({
                     x: dotX,
