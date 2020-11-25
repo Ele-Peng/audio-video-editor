@@ -41,6 +41,7 @@
                     y: dotY,
                     color: dotColor,
                     cap: 0,
+                    dy: getRandom(1, 2),
                     dx: getRandom(1, 2)
                 });
             }
@@ -58,6 +59,8 @@
                 round.addColorStop(1, o.color);
                 ctx.fillStyle = round;
                 ctx.fill();
+                o.y -= o.dy;
+                o.y = o.y < 0 ? height : o.y;
                 o.x += o.dx;
                 o.x = o.x > width ? 0 : o.x;
             }
