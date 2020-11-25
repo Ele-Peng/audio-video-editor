@@ -89,7 +89,7 @@ class AudioVisualizer {
     self.source = bufferSource;
   }
 
-  changeVolumn(percent) {
+  changeVolume(percent) {
     this.gainNode.gain.value = percent * percent;
   }
 

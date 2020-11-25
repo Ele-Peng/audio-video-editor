@@ -19,36 +19,43 @@ html,body {
   overflow: hidden;
 }
 .container {
-	background-image: url("./WechatIMG69.jpeg");
+	background-image: url("./background.jpg");
 	background-size: 100% 100%
+}
+.volume {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
 }
 input[type='range'] {
 	-webkit-appearance: none;
-	background-color: gray;
+    background:rgba(255,133,192, 0.8);
 	height: 8px;
 	border-radius: 15px;
 	outline: none;
+	margin-left: 4px;
 }
 /*滑块样式*/
 input[type='range']::-webkit-slider-thumb{
     -webkit-appearance: none;
     height: 12px;
     width: 12px;
-    background: #ddd;
+    background:white;
     border-radius: 100%;
     border: none;
 }
 /*滑条*/
 input[type='range']::-moz-range-track{
     height: 8px;
-    background: gray;
+    background:rgba(255,133,192, 0.8);
     border-radius: 15px;
     border: none;
 }
 input[type='range']::-moz-range-thumb{
     height: 12px;
     width: 12px;
-    background: #ddd;
+    background:rgba(255,133,192, 0.8);
     border: none;
     border-radius: 100%;
 }
@@ -67,8 +74,10 @@ input[type='range']::-moz-range-thumb{
 }
 .operator button#upload{
 	display: block;
-	color: white;
-	background-color: black;
+	color: #fff;
+	background-color: rgba(255,133,192, 0.8);
+	border: 1px solid rgba(255,133,192, 0.8);
+	box-shadow: 1px 1px 5px #888;
 	margin: 10px auto;
 	height: 50px;
 	font-size: 30px;
@@ -105,6 +114,9 @@ ul.type li{
 	color: #000;
 	background-color: #fff;
 }
+p {
+	color: #fff;
+}
 
 /*媒体查询*/
 @media screen and (max-width:800px),screen and (max-height:500px){
@@ -120,8 +132,8 @@ ul.type li{
 		line-height: 34px;
 	}
 	.operator button#upload{
-		font-size: 20px;
-		height: 25px;
+		font-size: 16px;
+		height: 44px;
 		width: 40%;
 	}
 	ul.type{
